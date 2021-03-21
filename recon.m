@@ -3,7 +3,7 @@ function [F_L,F_R] = recon(rho,u,p,scheme)
 %   Detailed explanation goes here
 
 if scheme == 1 %MUSCL: 4 points
-    %b = 2; phi = @(r) max(0, min(b,r)); %Osher/minmod(b=1)
+    %b = 1; phi = @(r) max(0, min(b,r)); %Osher/minmod(b=1)
     %phi = @(r) (r+abs(r))./(1+abs(r)); %van Leer
     b = 2; phi = @(r) max([0*r; min(1,b*r); min(b,r)]); %Sweby/superbee(b=2)
     

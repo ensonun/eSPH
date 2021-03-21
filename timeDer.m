@@ -40,18 +40,7 @@ else
     k_id = cell(N,1); %empty cell
 end
 
-% Calculate wall x,y velocity
-% norm_nw = sqrt(n_w(:,1).^2+n_w(:,2).^2);
-% vw_x = zeros(size(norm_nw));
-% vw_y = zeros(size(norm_nw));
-% vw_x(norm_nw>0) = uw(norm_nw>0).*-n_w(norm_nw>0,2)./norm_nw(norm_nw>0);
-% vw_y(norm_nw>0) = uw(norm_nw>0).*n_w(norm_nw>0,1)./norm_nw(norm_nw>0);
-
 % Initialise variables
-%drhodt = zeros(N,1);
-%dvxdt = zeros(N,1);
-%dvydt = zeros(N,1);
-
 drhodtf = zeros(N,1);
 dvxdtf = zeros(N,1);
 dvydtf = zeros(N,1);
@@ -119,14 +108,10 @@ for i = 1:N %parallel loop through each fluid particle
         if nu(i)==0 || nu(j)==0
             visc = 0;
         else
-            %visc = -16*nu(i)*nu(j)/(rho(i)*nu(i)+rho(j)*nu(j))*((vx(i)-vsx)*eij_x+(vy(i)-vsy)*eij_y)/h;
             visc = -2*(nu(i)+nu(j))*((vx(i)-vx(j))*eij_x+(vy(i)-vy(j))*eij_x)/norm_rij/rho(i)/rho(j);
         end
         
         % Evaluate fluxes
-        %drhodt(i) = drhodt(i) + m(j)/rho(j)*((vx(i)-vsx)*eij_x+(vy(i)-vsy)*eij_y)*dwdr;
-        %dvxdt(i) = dvxdt(i) - m(j)/rho(j)*ps*dwdr*eij_x;
-        %dvydt(i) = dvydt(i) - m(j)/rho(j)*ps*dwdr*eij_y;        
         drhodtf(i) = drhodtf(i) + 2*rho(i)*m(j)/rho(j)*((vx(i)-vsx)*eij_x+(vy(i)-vsy)*eij_y)*dwdr;
         dvxdtf(i) = dvxdtf(i) - 2*m(j)/rho(i)/rho(j)*(ps+visc)*dwdr*eij_x;
         dvydtf(i) = dvydtf(i) - 2*m(j)/rho(i)/rho(j)*(ps+visc)*dwdr*eij_y;
@@ -144,8 +129,6 @@ for i = 1:N %parallel loop through each fluid particle
         % Velocity
         nw_x = n_w(k,1);
         nw_y = n_w(k,2);
-        %u = [-vx(i)*nw_x-vy(i)*nw_y, ...
-        %    (vx(i)-2*vw_x(k))*nw_x+(vy(i)-2*vw_y(k))*nw_y];
         u = [0, -vx(i)*nw_x-vy(i)*nw_y, ...
               vx(i)*nw_x+vy(i)*nw_y +2*sqrt(vw_x(k)^2+vw_y(k)^2), 0];
         % Pressure
@@ -165,7 +148,6 @@ for i = 1:N %parallel loop through each fluid particle
         if nu(i)==0
             visc = 0;
         else
-            %visc = -16*nu(i)/(rho(i)+rhow)*((vx(i)-vsx)*eij_x+(vy(i)-vsy)*eij_y)/h;
             visc = -4*nu(i)*((vx(i)-vw_x(k))*eij_x+(vy(i)-vw_y(k))*eij_x)/norm_rij/rho(i)/rhow;
         end
         
@@ -174,9 +156,6 @@ for i = 1:N %parallel loop through each fluid particle
         dvxdtw(i) = dvxdtw(i) - 2*m(i)/rho(i)/rhow*(ps+visc)*dwdr*eij_x;
         dvydtw(i) = dvydtw(i) - 2*m(i)/rho(i)/rhow*(ps+visc)*dwdr*eij_y;
     end
-    %drhodt(i) = 2*rho(i)*drhodt(i);
-    %dvxdt(i) = 2/rho(i)*dvxdt(i) + f(1);
-    %dvydt(i) = 2/rho(i)*dvydt(i) + f(2);
 end
 
 drhodt = drhodtf + drhodtw;

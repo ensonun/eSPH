@@ -77,10 +77,7 @@ clear
 
 %% Initialisation
 % Inputs
-load('wall.mat','wall')
-load('fluid.mat','fluid');
-
-[settings, f, dt_save, file_name] = inputSPH();
+load('input.mat','wall','fluid','f','settings','dt_save','file_name');
 
 % Pre-compute wall normal vector (static wall, i.e. wall particle x,y fixed)
 if size(wall,2) > 0
@@ -90,15 +87,14 @@ else
 end
 %quiver(wall(:,1),wall(:,2),n_w(:,1),n_w(:,2))
 
-
 % Initialise saving settings
 if file_name == 0
     file_name = 'SPHout';
 end
 if exist(file_name,'dir') == 7
-    %if input('Do you want to overwrite the data? (YES - 1) \n') ~= 1
-    %    error('Terminated.')
-    %end
+    if input('Do you want to overwrite the data? (YES - 1) \n') ~= 1
+        error('Terminated.')
+    end
 else
     mkdir(file_name) %create output directory
 end
@@ -128,7 +124,7 @@ while t < settings(8)
     
     % Time integration
     if order == 2 %2nd order: Stormer-Verlet
-        if t == 0
+        if n_dt == 0
             [~, dvxdt, dvydt] = timeDer(fluid,wall,settings,f(fluid(:,1),fluid(:,2),t),n_w);
         end
         fluid(:,6) = fluid(:,6) + 0.5*dvxdt*dt;
@@ -156,7 +152,7 @@ while t < settings(8)
     % Output particles to file
     if t >= n_save*dt_save
         % Save all particle as .mat-file
-        save([file_name,'/',file_name,'_',num2str(n_save),'.mat'],'fluid','wall','t');
+        save([file_name,'/SPHout_',num2str(n_save),'.mat'],'fluid','wall','t');
         
         % Save fluid particle matrix as .vtu-file
         %vtuSave(particles, n_save, file_name);
