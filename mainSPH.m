@@ -77,10 +77,10 @@ clear
 
 %% Initialisation
 % Inputs
-load('input.mat','wall','fluid','f','settings','dt_save','file_name');
+load('input.mat');
 
 % Pre-compute wall normal vector (static wall, i.e. wall particle x,y fixed)
-if size(wall,2) > 0
+if size(wall,1) > 0
     n_w = wallNormal(wall,settings(1),settings(2));
 else
     n_w = nan;
@@ -92,12 +92,19 @@ if file_name == 0
     file_name = 'SPHout';
 end
 if exist(file_name,'dir') == 7
-    if input('Do you want to overwrite the data? (YES - 1) \n') ~= 1
+    warning(['"',file_name,'" already exist.'])
+    if input('Overwrite existing data? (YES - 1) \n') ~= 1
         error('Terminated.')
     end
 else
     mkdir(file_name) %create output directory
 end
+% Save settings to a txt file
+txtID = fopen([file_name,'/detail.txt'],'w');
+fprintf(txtID,'%s\n',datetime);
+fprintf(txtID,'No. of fluid particles: %d\n',size(fluid,1));
+fprintf(txtID,'No. of wall particles : %d\n',size(wall,1));
+fprintf(txtID,'%7s = %.3f\n',[["kernel","h","gamma","recon","riemann","beta"];settings(1:6)]);
 % vtuSave(particles, 0, file_name); %save boundary particles
 
 % Initialise time loop
@@ -108,7 +115,7 @@ order = settings(7);
 
 %% Time loop
 tic
-%for nn = 1:1
+%for nn = 1:10
 while t < settings(8)
     % Find dt
     dt = stepSize(max(fluid(:,10)), ... max(c0)
@@ -161,13 +168,21 @@ while t < settings(8)
     end
     
     % Display progress 
-    fprintf('t = %.4f, dt = %f, step no %d\n',t,dt,n_dt); 
+    fprintf('t = %.4f, dt = %.6f, step %d\n',t,dt,n_dt); 
     
+    % User defined error message
+    if exist('catch_err','var') == 1
+        for err_n = 1:size(catch_err,2)
+            if catch_err(1,err_n)
+                error(catch_err(2,err_n))
+            end
+        end
+    end
 %     if any(fluid(:,2)<-2)
 %         error('Fluid leaks!')
 %     end
     if max(abs(fluid(:,3)./fluid(:,9)-1)) > 0.01 %check 1% density flucation holds
-        warning(['Large density flucation ',num2str(max(abs(fluid(:,3)./fluid(:,9)-1))*100,'%.2f'),'%'])
+        warning(['Density flucation = ',num2str(max(abs(fluid(:,3)./fluid(:,9)-1))*100,'%.2f'),'%'])
     end
 end
 
@@ -175,3 +190,6 @@ end
 
 runtime = toc;
 fprintf('Simulation completed after %.2fs \n',runtime);
+
+fprintf(txtID,'runtime: %.4fs\n',runtime);
+fclose(txtID);
