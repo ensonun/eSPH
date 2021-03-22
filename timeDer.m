@@ -72,7 +72,6 @@ if settings(4) ~= 0
     end    
 end
 
-
 %par
 for i = 1:N %parallel loop through each fluid particle
     
@@ -86,15 +85,15 @@ for i = 1:N %parallel loop through each fluid particle
         dwdr = wDer(norm_rij,h,w_type);
         
         % Construct Riemann problem: 4-point stencil h--i--j--k
-        rhoh = rho(i) - gradrho(i,:)*[rij_x;rij_y];
-        vxh = vx(i) - gradvx(i,:)*[rij_x;rij_y];
-        vyh = vy(i) - gradvy(i,:)*[rij_x;rij_y];
-        ph = p(i) - gradp(i,:)*[rij_x;rij_y];
+        rhoh = rho(i) + gradrho(i,:)*[rij_x;rij_y];
+        vxh = vx(i) + gradvx(i,:)*[rij_x;rij_y];
+        vyh = vy(i) + gradvy(i,:)*[rij_x;rij_y];
+        ph = p(i) + gradp(i,:)*[rij_x;rij_y];
         
-        rhok = rho(j) + gradrho(j,:)*[rij_x;rij_y];
-        vxk = vx(j) + gradvx(j,:)*[rij_x;rij_y];
-        vyk = vy(j) + gradvy(j,:)*[rij_x;rij_y];
-        pk = p(j) + gradp(j,:)*[rij_x;rij_y];
+        rhok = rho(j) - gradrho(j,:)*[rij_x;rij_y];
+        vxk = vx(j) - gradvx(j,:)*[rij_x;rij_y];
+        vyk = vy(j) - gradvy(j,:)*[rij_x;rij_y];
+        pk = p(j) - gradp(j,:)*[rij_x;rij_y];
         
         u = -[vxh,vx(i),vx(j),vxk]*eij_x -[vyh,vy(i),vy(j),vyk]*eij_y;
         [F_L,F_R] = recon([rhoh,rho(i),rho(j),rhok],u,[ph,p(i),p(j),pk],settings(4));
