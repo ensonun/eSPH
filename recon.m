@@ -16,15 +16,16 @@ if scheme == 1 %MUSCL/2nd order: 4 points
         
 elseif scheme == 2 %Parabolic/3rd order: 4 points
     phi = @(r) 2*r./(1+r.^2); %Albada
-        
+    
     dF_1 = [rho(2), u(2), p(2)] - [rho(1), u(1), p(1)];
     dF_2 = [rho(3), u(3), p(3)] - [rho(2), u(2), p(2)];
     dF_3 = [rho(4), u(4), p(4)] - [rho(3), u(3), p(3)];
     
-    F_L = [rho(2), u(2), p(2)] + 0.25*phi(dF_1./(dF_2+0.001*(abs(dF_2)==0))).*(2/3*dF_1 + 4/3*dF_2);
+    F_L = [rho(2), u(2), p(2)] + 0.25*phi(dF_2./(dF_1+0.001*(abs(dF_1)==0))).*(2/3*dF_1 + 4/3*dF_2);
     F_R = [rho(3), u(3), p(3)] - 0.25*phi(dF_2./(dF_3+0.001*(abs(dF_3)==0))).*(2/3*dF_3 + 4/3*dF_2);
     
 elseif scheme == 6 %modified 6th order WENO (Zhang 2019): 4 points
+    
     
 else %piecewise constant/1st order: 2 points
     F_L = [rho(2), u(2), p(2)];
