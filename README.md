@@ -70,7 +70,7 @@ The input ```.mat``` file contains the followings (must be in exact names):
 The code outputs 
 
 1. a series of ```SPHout_$NSTEP.mat``` files according to the inputs
-2. a ```.txt``` file containing the settings and runtime
+2. a ```detail.txt``` file containing the settings and runtime
 
 ## Contribution
 
