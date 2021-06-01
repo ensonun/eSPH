@@ -20,17 +20,29 @@ end
 % Initialise saving settings
 if exist(dir_name,'dir') == 7
     warning(['"',dir_name,'" already exist.'])
-     if input('Overwrite existing data? (YES - 1) \n') ~= 1
-         error('Terminated.')
-     end
+    usrinput = input('Overwrite existing data - 1 \nContinue simulation     - 2 \nTerminate - something else:\n');
+    if (usrinput ~= 1)&&(usrinput ~= 2)
+        error('Terminated.')
+    end
 else
     mkdir(dir_name) %create output directory
 end
 
 % Initialise time loop
-t = 0;
 n_dt = 0;
 n_save = 1;
+if (exist('usrinput','var') == 0) 
+    %initialise directly if no existing data or overwrite existing data
+    t = 0;    
+elseif usrinput == 1
+    t = 0;
+else    
+    %start from the last existing data
+    while exist(dir_name+"/SPHout_"+num2str(n_save)+".mat","file") == 2
+        n_save = n_save + 1;
+    end
+    load(dir_name+"/SPHout_"+num2str(n_save-1)+".mat","t");
+end
 
 %% Time loop
 tic
@@ -105,6 +117,6 @@ txtID = fopen([dir_name,'/detail.txt'],'w');
 fprintf(txtID,'%s\n',datetime);
 fprintf(txtID,'No. of fluid particles: %d\n',size(fluid,1));
 fprintf(txtID,'No. of wall particles : %d\n',size(wall,1));
-fprintf(txtID,'%7s = %.3f\n',[["kernel","h","gamma","recon","riemann","beta","cfl#"];settings([1:6,9])]);
+fprintf(txtID,'%7s = %.3f\n',[["kernel","h","gamma","recon","riemann","beta","cfl#"];settings([1:6,8])]);
 fprintf(txtID,'runtime: %.4fs\n',runtime);
 fclose(txtID);
