@@ -1,12 +1,10 @@
 function nw = wallNormal(wall,kernel_type,h)
-%WALLNORMAL Summary of this function goes here
-%   Detailed explanation goes here
+%WALLNORMAL Compute wall nomrnal vectors
 
 % Range search
 j_id = rangesearch(wall(:,1:2),wall(:,1:2),h);
 
 nw = zeros(size(wall(:,1:2)));
-
 for i = 1:size(wall,1)
     for j = j_id{i}(2:end)
         rij = wall(i,1:2)-wall(j,1:2);

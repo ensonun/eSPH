@@ -1,11 +1,11 @@
 # eSPH
-eSPH is a simple, lightweight 2D Riemann solver based high-order SPH code written in MATLAB.
+eSPH is a simple, lightweight 2D SPH code written in MATLAB. The method is based on a high-order, low-dissipation Riemann solver SPH architecture.
 
 It is part of Enson's final year project for a MEng degree at Imperial College London. Please refer to my [thesis]() for more information and references.
 
 ## Dependencies
 
-The code uses the functions in this repository and MATLAB built-in functions only. After downloading, remember to put **all** member functions in the same directory as the ```mainSPH.m```.
+The code uses the functions in this repository and MATLAB built-in functions only. After downloading, remember to put **all** member functions in the same directory as the ```eSPH.m```.
 
 To enable parallel computing, please ensure that the [Parallel Computing Toolbox](https://uk.mathworks.com/products/parallel-computing.html) is installed in your local MATLAB.
 
@@ -14,76 +14,63 @@ The current version of the code is tested with MATLAB 2019a. Please report any c
 ## I/O
 ### Inputs
 
-The main code ```mainSPH.m``` takes in a ```.mat``` file which default name is ```input.mat```.
+The code is run by calling the function ```eSPH("$FNAME.mat")```.
 
-The input file contains the following variables:
+The input ```.mat``` file contains the followings (must be in exact names):
 
-- A  double array ```fluid```
+1. A  Nx11 double array ```fluid```:
 
-  ```fluid(:,1)``` = x-coordinate
+| Entry             | Parameter                             |
+| :---------------- | ------------------------------------- |
+| ```fluid(:,1)```  | x-coordinate                          |
+| ```fluid(:,2)```  | y-coordinate                          |
+| ```fluid(:,3)```  | density                               |
+| ```fluid(:,4)```  | mass (constant throughout simulation) |
+| ```fluid(:,5)```  | pressure                              |
+| ```fluid(:,6)```  | x-velocity                            |
+| ```fluid(:,7)```  | y- velocity                           |
+| ```fluid(:,8)```  | *(Reserved)*                          |
+| ```fluid(:,9)```  | reference density of fluid, rho_0     |
+| ```fluid(:,10)``` | artificial speed of sound, c_0        |
+| ```fluid(:,11)``` | kinematic viscosity, nu               |
 
-  ```fluid(:,2)``` = y-coordinate
+2. A  Nx4 double array ```wall```:
 
-  ```fluid(:,3)``` = density
+| Entry             | Parameter                         |
+| :---------------- | --------------------------------- |
+| ```wall(:,1)```  | x-coordinate                      |
+| ```wall(:,2)```  | y-coordinate                      |
+| ```wall(:,3)``` | x-velocity                        |
+| ```wall(:,4)```  | y-velocity                       |
 
-  ```fluid(:,4)``` = mass (constant throughout simulation)
+3. A function handle ```f``` for the body force
 
-  ```fluid(:,5)``` = pressure
+   ```f = @(x,y,t) [f_x; f_y]```
 
-  ```fluid(:,6)``` = x velocity
+   *Note*: x, y are Nx1 arrays, so the output of ```f``` has to be Nx2. You can do this naively by ```f = @(x,y,t) [f_x; f_y] + 0*x'```.
 
-  ```fluid(:,7)``` = y velocity
-
-  ```fluid(:,8)``` = *(To be added)*
-
-  ```fluid(:,9)``` = reference density of fluid, rho_0
-
-  ```fluid(:,10)``` = artificial speed of sound, c_0
-
-  ```fluid(:,11)``` = kinematic viscosity, nu
-
-- A double array ```wall```
-
-  ```wall(:,1)``` = x-coordinate
-
-  ```wall(:,2)``` = y-coordinate
-
-  ```wall(:,3)``` = x velocity
-
-  ```wall(:,4)``` = y velocity
-
-- A function handle ```f```
-
-  ```f = @(x,y,t) [f_x; f_y]```
-
-  *Note*: x, y are N x 1 arrays, so the output of ```f``` has to be N x 2
-
-- A double array ```settings```
-
-```settings(1:6)``` are parameters related to```timeDer.m```:
+4. A 1x8 double array ```settings```:
 
 | Entry             | Parameter                                                    | Options                                                      |
 | :---------------- | ------------------------------------------------------------ | :----------------------------------------------------------- |
-| ```settings(1)``` | Kernel function type                                         | 2 - Wendland 5th order<br>3 - cubic spline                   |
-| ```settings(2)``` | Smoothing length, h                                          | /                                                            |
-| ```settings(3)``` | gamma in equation of state (usually 7 for water, 1.4 for air) | /                                                            |
-| ```settings(4)``` | Reconstruction scheme                                        | 0 - piecewise constant <br>1 - MUSCL piecewise linear <br>2 - MUSCL piecewise parabolic <br>5 - WENO (Zhang, 2019) |
-| ```settings(5)``` | Riemann solver type                                          | 0 - classical SPH w/o dissipation <br>1 - Roe solver         |
-| ```settings(6)``` | Riemann solver limiter parameter                             | /                                                            |
+| ```settings(1)``` | Kernel function                                              | 3 - Cubic b-spline<br>4 - Quartic b-spline<br>5 - 5th order Wendland |
+| ```settings(2)``` | Kernel support radius, kh                                    | /                                                            |
+| ```settings(3)``` | Gamma in equation of state (usually 7 for water, 1.4 for air) | /                                                            |
+| ```settings(4)``` | Reconstruction scheme                                        | 1 - MUSCL piecewise linear <br>2 - MUSCL piecewise parabolic (not TVD)<br>3 - 3rd order WENO-Z<br>otherwise - piecewise constant |
+| ```settings(5)``` | Riemann solver                                               | 0 - Classical SPH w/o dissipation <br>1 - Roe solver         |
+| ```settings(6)``` | Switch for second derivative                                 | 1 - on<br>0 - off                                            |
+| ```settings(7)``` | Simulation end time (non-dimensionalised by t_ref)           | /                                                            |
+| ```settings(8)``` | CFL number (must be <=1)                                     | /                                                            |
 
-```settings(7:9)``` are time integration related:
-
-```settings(7)``` = time integration order (=2)
-```settings(8)``` = simulation end time (non-dimensionalised by sqrt(g/H))
-```settings(9)``` = max dt
-
-- (Optional) A string ```file_name```
-
-- (Optional) A string array ```catch_err``` *(To be added)*
+5. A double ```dt_save```, indicating the time between which each output file is written
+6. A string ```dir_name```, specifying the name of the directory where the output files are stored in
 
 ### Outputs
 
-The code outputs a series of ```.mat``` files according to the settings. The post-processing routine ```mat2vtu.m``` can be used to convert the ```.mat``` files to ```.vtu``` files readable to [ParaView](https://www.paraview.org/) or other visualisation software.
+The code outputs 
+
+1. a series of ```SPHout_$NSTEP.mat``` files according to the inputs
+2. a ```.txt``` file containing the settings and runtime
 
 ## Contribution
 
