@@ -81,7 +81,7 @@ hessrho = zeros(N,4); %[rho_xx, rho_yx, rho_xy, rho_yy]
 hessvx  = zeros(N,4);
 hessvy  = zeros(N,4);
 hessp   = zeros(N,4);
-if settings(4) > 1
+if (settings(4) > 1)&&(settings(6)==1)
     parfor i = 1:N
         B = [0 0;0 0];
         for j = j_id{i}(2:end)
