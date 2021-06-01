@@ -8,7 +8,7 @@ function eSPH(inputf)
 
 %% Initialisation
 % Inputs
-load(inputf); %'fluid','wall','f','settings','dt_save','dir_name'
+load(inputf,'fluid','wall','f','settings','dt_save','dir_name');
 
 % Pre-compute wall normal vector (static wall, i.e. wall particle x,y fixed)
 if size(wall,1) > 0
