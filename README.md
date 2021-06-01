@@ -1,7 +1,7 @@
 # eSPH
 eSPH is a simple, lightweight 2D SPH code written in MATLAB. The method is based on a high-order, low-dissipation Riemann solver SPH architecture.
 
-It is part of Enson's final year project for a MEng degree at Imperial College London. Please refer to my [thesis]() for more information and references.
+It is part of Enson's final year project for his MEng degree at Imperial College London. Please refer to my [thesis]() (available soon) for more information and references.
 
 ## Dependencies
 
