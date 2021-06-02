@@ -41,7 +41,7 @@ else
     while exist(dir_name+"/SPHout_"+num2str(n_save)+".mat","file") == 2
         n_save = n_save + 1;
     end
-    load(dir_name+"/SPHout_"+num2str(n_save-1)+".mat","t");
+    load(dir_name+"/SPHout_"+num2str(n_save-1)+".mat","t","fluid","wall");
 end
 
 %% Time loop
